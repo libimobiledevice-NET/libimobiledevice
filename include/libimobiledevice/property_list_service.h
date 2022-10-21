@@ -175,7 +175,7 @@ LIBIMOBILEDEVICE_API_MSC property_list_service_error_t property_list_service_dis
  * @return PROPERTY_LIST_SERVICE_E_SUCCESS on success,
  *     PROPERTY_LIST_SERVICE_E_INVALID_ARG if one or more of the arguments are invalid.
  */
-property_list_service_error_t property_list_service_get_service_client(property_list_service_client_t client, service_client_t *service_client);
+LIBIMOBILEDEVICE_API_MSC property_list_service_error_t property_list_service_get_service_client(property_list_service_client_t client, service_client_t *service_client);
 
 #ifdef __cplusplus
 }

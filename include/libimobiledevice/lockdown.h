@@ -439,7 +439,7 @@ LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_goodbye(lockdownd_client_t 
  *   parameters is invalid, LOCKDOWN_E_PAIRING_FAILED if the pairing failed,
  *   or a LOCKDOWN_E_* error code otherwise.
  */
-lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl);
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl);
 
 /**
  * Sends a request via lockdown client with established CU pairing session
@@ -459,7 +459,7 @@ lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdow
  *   lockdown client does not have an established CU pairing session,
  *   or a LOCKDOWN_E_* error code otherwise.
  */
-lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply);
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply);
 
 /**
  * Retrieves a value using an optional domain and/or key name from a lockdown
@@ -479,7 +479,7 @@ lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t cli
  *   lockdown client does not have an established CU pairing session,
  *   or a LOCKDOWN_E_* error code otherwise.
  */
-lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value);
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value);
 
 /**
  * Perform a device pairing with a lockdown client that has an established
@@ -492,7 +492,7 @@ lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* 
  *   does not have an established CU pairing session, or a LOCKDOWN_E_* error
  *   code otherwise.
  */
-lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client);
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client);
 
 
 /* Helper */

@@ -29,7 +29,9 @@
 #define __USE_GNU 1
 #include <stdio.h>
 #include <ctype.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <plist/plist.h>
 
 #include "idevice.h"
@@ -490,7 +492,7 @@ static void chacha20_poly1305_decrypt_64(unsigned char* key, unsigned char* nonc
 
 #endif /* HAVE_WIRELESS_PAIRING */
 
-LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl)
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client || !pairing_callback || (host_info && plist_get_node_type(host_info) != PLIST_DICT) || (acl && plist_get_node_type(acl) != PLIST_DICT))
@@ -932,7 +934,7 @@ debug_buffer(data, data_len);
 #endif
 }
 
-LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply)
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client || !request)
@@ -1057,7 +1059,7 @@ LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_cu_send_request_and_get_reply(l
 #endif
 }
 
-LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value)
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client)
@@ -1097,7 +1099,7 @@ LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t
 #endif
 }
 
-LIBIMOBILEDEVICE_API lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client)
+LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client)

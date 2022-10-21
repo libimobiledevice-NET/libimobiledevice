@@ -362,7 +362,7 @@ LIBIMOBILEDEVICE_API debugserver_error_t debugserver_client_set_ack_mode(debugse
 	return DEBUGSERVER_E_SUCCESS;
 }
 
-LIBIMOBILEDEVICE_API debugserver_error_t debugserver_client_set_receive_params(debugserver_client_t client, int (*cancel_receive)(), int receive_loop_timeout)
+LIBIMOBILEDEVICE_API_MSC debugserver_error_t debugserver_client_set_receive_params(debugserver_client_t client, int (*cancel_receive)(), int receive_loop_timeout)
 {
 	if (!client)
 		return DEBUGSERVER_E_INVALID_ARG;
