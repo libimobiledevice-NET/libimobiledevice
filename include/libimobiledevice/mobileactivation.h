@@ -30,6 +30,7 @@ extern "C" {
 #include <libimobiledevice/libimobiledevice.h>
 #include <libimobiledevice/lockdown.h>
 
+/** Service identifier passed to lockdownd_start_service() to start the mobile activation service */
 #define MOBILEACTIVATION_SERVICE_NAME "com.apple.mobileactivationd"
 
 /** Error Codes */
@@ -43,7 +44,7 @@ typedef enum {
 	MOBILEACTIVATION_E_UNKNOWN_ERROR   = -256
 } mobileactivation_error_t;
 
-typedef struct mobileactivation_client_private mobileactivation_client_private;
+typedef struct mobileactivation_client_private mobileactivation_client_private; /**< \private */
 typedef mobileactivation_client_private *mobileactivation_client_t; /**< The client handle. */
 
 /**

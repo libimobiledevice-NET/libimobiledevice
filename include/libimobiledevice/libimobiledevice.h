@@ -54,14 +54,15 @@ typedef enum {
 	IDEVICE_E_UNKNOWN_ERROR   = -2,
 	IDEVICE_E_NO_DEVICE       = -3,
 	IDEVICE_E_NOT_ENOUGH_DATA = -4,
+	IDEVICE_E_CONNREFUSED     = -5,
 	IDEVICE_E_SSL_ERROR       = -6,
 	IDEVICE_E_TIMEOUT         = -7
 } idevice_error_t;
 
-typedef struct idevice_private idevice_private;
+typedef struct idevice_private idevice_private; /**< \private */
 typedef idevice_private *idevice_t; /**< The device handle. */
 
-typedef struct idevice_connection_private idevice_connection_private;
+typedef struct idevice_connection_private idevice_connection_private; /**< \private */
 typedef idevice_connection_private *idevice_connection_t; /**< The connection handle. */
 
 /** Options for idevice_new_with_options() */
@@ -73,23 +74,24 @@ enum idevice_options {
 
 /** Type of connection a device is available on */
 enum idevice_connection_type {
-	CONNECTION_USBMUXD = 1,
-	CONNECTION_NETWORK
+	CONNECTION_USBMUXD = 1, /**< device is available via USBMUX */
+	CONNECTION_NETWORK /**< device is available via network */
 };
 
+/** Device information returned by #idevice_get_device_list_extended API */
 struct idevice_info {
-	char *udid;
-	enum idevice_connection_type conn_type;
-	void* conn_data;
+	char *udid; /**< UDID of the device */
+	enum idevice_connection_type conn_type; /**< Type of connection the device is available on */
+	void* conn_data; /**< Connection data, depending on the connection type */
 };
 typedef struct idevice_info* idevice_info_t;
 
 /* discovery (events/asynchronous) */
 /** The event type for device add or removal */
 enum idevice_event_type {
-	IDEVICE_DEVICE_ADD = 1,
-	IDEVICE_DEVICE_REMOVE,
-	IDEVICE_DEVICE_PAIRED
+	IDEVICE_DEVICE_ADD = 1, /**< device was added */
+	IDEVICE_DEVICE_REMOVE, /**< device was removed */
+	IDEVICE_DEVICE_PAIRED /**< device completed pairing process */
 };
 
 /**
@@ -115,8 +117,8 @@ typedef struct {
 /** Callback to notifiy if a device was added or removed. */
 typedef void (*idevice_event_cb_t) (const idevice_event_t *event, void *user_data);
 
-/** Enables calling applications to capture debug messages from libimobiledevice */
-typedef void(*idevice_debug_cb_t) (char *message);
+/** Event subscription context type */
+typedef struct idevice_subscription_context* idevice_subscription_context_t;
 
 /* functions */
 
@@ -138,8 +140,35 @@ LIBIMOBILEDEVICE_API_MSC void idevice_set_debug_callback(idevice_debug_cb_t call
 LIBIMOBILEDEVICE_API_MSC void idevice_set_debug_level(int level);
 
 /**
- * Register a callback function that will be called when device add/remove
+ * Subscribe a callback function that will be called when device add/remove
  * events occur.
+ *
+ * @param context A pointer to a idevice_subscription_context_t that will be
+ *    set upon creation of the subscription. The returned context must be
+ *    passed to idevice_events_unsubscribe() to unsubscribe the callback.
+ * @param callback Callback function to call.
+ * @param user_data Application-specific data passed as parameter
+ *   to the registered callback function.
+ *
+ * @return IDEVICE_E_SUCCESS on success or an error value when an error occurred.
+ */
+LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_events_subscribe(idevice_subscription_context_t *context, idevice_event_cb_t callback, void *user_data);
+
+/**
+ * Unsubscribe the event callback function that has been registered with
+ * idevice_events_subscribe().
+ *
+ * @param context A valid context as returned from idevice_events_subscribe().
+ *
+ * @return IDEVICE_E_SUCCESS on success or an error value when an error occurred.
+ */
+LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_events_unsubscribe(idevice_subscription_context_t context);
+
+/**
+ * (DEPRECATED) Register a callback function that will be called when device add/remove
+ * events occur.
+ *
+ * @deprecated Use idevice_events_subscribe() instead.
  *
  * @param callback Callback function to call.
  * @param user_data Application-specific data passed as parameter
@@ -150,8 +179,10 @@ LIBIMOBILEDEVICE_API_MSC void idevice_set_debug_level(int level);
 LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_event_subscribe(idevice_event_cb_t callback, void *user_data);
 
 /**
- * Release the event callback function that has been registered with
+ * (DEPRECATED) Release the event callback function that has been registered with
  *  idevice_event_subscribe().
+ *
+ * @deprecated Use idevice_events_unsubscribe() instead.
  *
  * @return IDEVICE_E_SUCCESS on success or an error value when an error occurred.
  */
@@ -373,57 +404,24 @@ LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_connection_get_fd(idevice_conne
 /* misc */
 
 /**
- * Gets the handle or (usbmux device id) of the device.
+ * Gets the handle or (USBMUX device id) of the device.
+ *
+ * @param device The device to get the USBMUX device id for.
+ * @param handle Pointer to a uint32_t that will be set to the USBMUX handle value.
+ *
+ * @return IDEVICE_E_SUCCESS on success, otherwise an error code.
  */
 LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_handle(idevice_t device, uint32_t *handle);
 
 /**
- * Gets the unique id for the device.
+ * Gets the Unique Device ID for the device.
+ *
+ * @param device The device to get the Unique Device ID for.
+ * @param udid Pointer that will be set to an allocated buffer with the device UDID. The consumer is responsible for releasing the allocated memory.
+ *
+ * @return IDEVICE_E_SUCCESS on success, otherwise an error code.
  */
 LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_udid(idevice_t device, char **udid);
-
-/**
-* Sets the socket type (Unix socket or TCP socket) libimobiledevice should use when connecting
-* to usbmuxd.
-*
-* @param value IDEVICE_SOCKET_TYPE_UNIX or IDEVICE_SOCKET_TYPE_TCP
-*
-* @return 0 on success or negative on error
-*/
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_socket_type(enum idevice_socket_type value);
-
-/**
-* Gets the socket type (Unix socket or TCP socket) libimobiledevice should use when connecting
-* to usbmuxd.
-*
-* @param value A pointer to an integer which will reveive the current socket type
-*
-* @return 0 on success or negative on error
-*/
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_socket_type(enum idevice_socket_type* value);
-
-/**
-* Sets the TCP endpoint to which libimobiledevice will connect if the socket type is set to
-* SOCKET_TYPE_TCP
-*
-* @param host The hostname or IP address to which to connect
-* @param port The port to which to connect.
-*
-* @return 0 on success or negative on error
-*/
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_tcp_endpoint(const char* host, uint16_t port);
-
-/**
-* Gets the TCP endpoint to which libimobiledevice will connect if the socket type is set to
-* SOCKET_TYPE_TCP
-*
-* @param host A pointer which will be set to the hostname or IP address to which to connect.
-*             The caller must free this string.
-* @param port The port to which to connect
-*
-* @return 0 on success or negative on error
-*/
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_tcp_endpoint(char** host, uint16_t* port);
 
 #ifdef __cplusplus
 }
