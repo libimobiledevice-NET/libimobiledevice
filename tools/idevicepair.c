@@ -31,7 +31,9 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <ctype.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #ifdef WIN32
 #include <windows.h>
 #include <conio.h>
