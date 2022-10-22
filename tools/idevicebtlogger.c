@@ -31,7 +31,9 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <getopt.h>
 #include <assert.h>
 #include <fcntl.h>
