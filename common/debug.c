@@ -47,6 +47,11 @@ void internal_set_debug_level(int level)
 	debug_level = level;
 }
 
+void internal_set_debug_callback(idevice_debug_cb_t callback)
+{
+	cb = callback;
+}
+
 #define MAX_PRINT_LEN (16*1024)
 
 #ifndef STRIP_DEBUG_CODE

@@ -120,7 +120,18 @@ typedef void (*idevice_event_cb_t) (const idevice_event_t *event, void *user_dat
 /** Event subscription context type */
 typedef struct idevice_subscription_context* idevice_subscription_context_t;
 
+/** Enables calling applications to capture debug messages from libimobiledevice */
+typedef void(*idevice_debug_cb_t) (char* message);
+
 /* functions */
+
+/**
+  * Sets the callback to invoke when writing out debug messages. If this callback is set, messages
+  * will be written to this callback instead of the standard output.
+  *
+  * @param callback The callback which will receive the debug messages. Set to NULL to redirect to stdout.
+  */
+LIBIMOBILEDEVICE_API_MSC void idevice_set_debug_callback(idevice_debug_cb_t callback);
 
 /**
  * Set the level of debugging.
