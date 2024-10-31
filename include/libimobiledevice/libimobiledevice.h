@@ -129,7 +129,7 @@ typedef void(*idevice_debug_cb_t) (char* message);
   *
   * @param callback The callback which will receive the debug messages. Set to NULL to redirect to stdout.
   */
-LIBIMOBILEDEVICE_API_MSC void idevice_set_debug_callback(idevice_debug_cb_t callback);
+LIBIMOBILEDEVICE_API void idevice_set_debug_callback(idevice_debug_cb_t callback);
 
 /**
  * Set the level of debugging.
@@ -437,7 +437,7 @@ LIBIMOBILEDEVICE_API const char* libimobiledevice_version();
 *
 * @return 0 on success or negative on error
 */
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_socket_type(enum idevice_socket_type value);
+LIBIMOBILEDEVICE_API idevice_error_t idevice_set_socket_type(enum idevice_socket_type value);
 
 /**
 * Gets the socket type (Unix socket or TCP socket) libimobiledevice should use when connecting
@@ -447,7 +447,7 @@ LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_socket_type(enum idevice_so
 *
 * @return 0 on success or negative on error
 */
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_socket_type(enum idevice_socket_type* value);
+LIBIMOBILEDEVICE_API idevice_error_t idevice_get_socket_type(enum idevice_socket_type* value);
 
 /**
 * Sets the TCP endpoint to which libimobiledevice will connect if the socket type is set to
@@ -458,7 +458,7 @@ LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_socket_type(enum idevice_so
 *
 * @return 0 on success or negative on error
 */
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_tcp_endpoint(const char* host, uint16_t port);
+LIBIMOBILEDEVICE_API idevice_error_t idevice_set_tcp_endpoint(const char* host, uint16_t port);
 
 /**
 * Gets the TCP endpoint to which libimobiledevice will connect if the socket type is set to
@@ -470,7 +470,7 @@ LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_set_tcp_endpoint(const char* ho
 *
 * @return 0 on success or negative on error
 */
-LIBIMOBILEDEVICE_API_MSC idevice_error_t idevice_get_tcp_endpoint(char** host, uint16_t* port);
+LIBIMOBILEDEVICE_API idevice_error_t idevice_get_tcp_endpoint(char** host, uint16_t* port);
 
 #ifdef __cplusplus
 }
