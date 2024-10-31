@@ -26,18 +26,6 @@
 #ifndef IMOBILEDEVICE_H
 #define IMOBILEDEVICE_H
 
-// Visual C++ requires the declaration of the methods to be exactly the same in
-// the public headers and the source files; otherwise it throws C2375.
-// Other compilers don't care.
-// In the .c files, we use the LIBIMOBILEDEVICE_API definition which depends on 
-// other definitions from config.h. We can't reference config.h from public headers.
-// See https://gcc.gnu.org/wiki/Visibility for some details on this syntax
-#ifdef _MSC_VER
-#define LIBIMOBILEDEVICE_API_MSC __declspec( dllexport )
-#else 
-#define LIBIMOBILEDEVICE_API_MSC __attribute__ ((visibility ("default"))) 
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
