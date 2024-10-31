@@ -48,18 +48,8 @@
 #include <plist/plist.h>
 
 #ifdef _MSC_VER
-void usleep(DWORD waitTime) {
-    LARGE_INTEGER perfCnt, start, now;
-
-    QueryPerformanceFrequency(&perfCnt);
-    QueryPerformanceCounter(&start);
-
-    do {
-        QueryPerformanceCounter((LARGE_INTEGER*)&now);
-    } while ((now.QuadPart - start.QuadPart) / (float)(perfCnt.QuadPart) * 1000 * 1000 < waitTime);
-}
+#define usleep(x) Sleep(x/1000)
 #endif
-
 #define MOBILEBACKUP_SERVICE_NAME "com.apple.mobilebackup"
 #define NP_SERVICE_NAME "com.apple.mobile.notification_proxy"
 
