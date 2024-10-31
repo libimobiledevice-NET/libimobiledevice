@@ -317,7 +317,7 @@ LIBIMOBILEDEVICE_API mobilesync_error_t mobilesync_remap_identifiers(mobilesync_
  *
  * @retval MOBILESYNC_E_SUCCESS on success
  */
-LIBIMOBILEDEVICE_API mobilesync_anchors_t mobilesync_anchors_new(const char *device_anchor, const char *computer_anchor);
+LIBIMOBILEDEVICE_API mobilesync_error_t mobilesync_anchors_new(const char *device_anchor, const char *computer_anchor, mobilesync_anchors_t *client);
 
 /**
  * Free memory used by anchors.
@@ -326,7 +326,7 @@ LIBIMOBILEDEVICE_API mobilesync_anchors_t mobilesync_anchors_new(const char *dev
  *
  * @retval MOBILESYNC_E_SUCCESS on success
  */
-LIBIMOBILEDEVICE_API void mobilesync_anchors_free(mobilesync_anchors_t anchors);
+LIBIMOBILEDEVICE_API mobilesync_error_t mobilesync_anchors_free(mobilesync_anchors_t anchors);
 
 
 /**
