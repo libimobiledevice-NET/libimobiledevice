@@ -58,6 +58,7 @@
 const char* target_directory = NULL;
 static int extract_raw_crash_reports = 0;
 static int keep_crash_reports = 0;
+static int remove_all = 0;
 
 static int file_exists(const char* path)
 {
@@ -85,7 +86,7 @@ static int extract_raw_crash_report(const char* filename)
 	strcpy(p, ".crash");
 
 	/* read plist crash report */
-	if (plist_read_from_filename(&report, filename)) {
+	if (plist_read_from_file(filename, &report, NULL)) {
 		plist_t description_node = plist_dict_get_item(report, "description");
 		if (description_node && plist_get_node_type(description_node) == PLIST_STRING) {
 			plist_get_string_val(description_node, &raw);
@@ -167,7 +168,7 @@ static int afc_client_copy_and_remove_crash_reports(afc_client_t afc, const char
 		char* p = strrchr(list[k], '.');
 		if (p != NULL && !strncmp(p, ".synced", 7)) {
 			/* make sure to strip ".synced" extension as seen on iOS 5 */
-			int newlen = strlen(list[k]) - 7;
+			size_t newlen = p - list[k];
 			strncpy(((char*)target_filename) + host_directory_length, list[k], newlen);
 			target_filename[host_directory_length + newlen] = '\0';
 		} else {
@@ -206,7 +207,7 @@ static int afc_client_copy_and_remove_crash_reports(afc_client_t afc, const char
 				stbuf.st_nlink = atoi(fileinfo[i+1]);
 			} else if (!strcmp(fileinfo[i], "st_mtime")) {
 				stbuf.st_mtime = (time_t)(atoll(fileinfo[i+1]) / 1000000000);
-			} else if (!strcmp(fileinfo[i], "LinkTarget")) {
+			} else if (!strcmp(fileinfo[i], "LinkTarget") && !remove_all) {
 				/* report latest crash report filename */
 				printf("Link: %s\n", (char*)target_filename + strlen(target_directory));
 
@@ -242,18 +243,26 @@ static int afc_client_copy_and_remove_crash_reports(afc_client_t afc, const char
 
 		/* recurse into child directories */
 		if (S_ISDIR(stbuf.st_mode)) {
+			if (!remove_all) {
 #ifdef WIN32
-			_mkdir(target_filename);
+				mkdir(target_filename);
 #else
-			mkdir(target_filename, 0755);
+				mkdir(target_filename, 0755);
 #endif
+			}
 			res = afc_client_copy_and_remove_crash_reports(afc, source_filename, target_filename, filename_filter);
 
 			/* remove directory from device */
-			if (!keep_crash_reports)
+			if (!remove_all && !keep_crash_reports)
 				afc_remove_path(afc, source_filename);
 		} else if (S_ISREG(stbuf.st_mode)) {
 			if (filename_filter != NULL && strstr(source_filename, filename_filter) == NULL) {
+				continue;
+			}
+
+			if (remove_all) {
+				printf("Remove: %s\n", source_filename);
+				afc_remove_path(afc, source_filename);
 				continue;
 			}
 
@@ -335,6 +344,7 @@ static void print_usage(int argc, char **argv, int is_error)
 		"  -f, --filter NAME     filter crash reports by NAME (case sensitive)\n"
 		"  -h, --help            prints usage information\n"
 		"  -v, --version         prints version information\n"
+		"  --remove-all          remove all crash logs found\n"
 		"\n"
 		"Homepage:    <" PACKAGE_URL ">\n"
 		"Bug Reports: <" PACKAGE_BUGREPORT ">\n"
@@ -365,6 +375,7 @@ int main(int argc, char* argv[])
 		{ "filter", required_argument, NULL, 'f' },
 		{ "extract", no_argument, NULL, 'e' },
 		{ "keep", no_argument, NULL, 'k' },
+		{ "remove-all", no_argument, NULL, 1 },
 		{ NULL, 0, NULL, 0}
 	};
 
@@ -409,6 +420,9 @@ int main(int argc, char* argv[])
 		case 'k':
 			keep_crash_reports = 1;
 			break;
+		case 1:
+			remove_all = 1;
+			break;
 		default:
 			print_usage(argc, argv, 1);
 			return 2;
@@ -418,12 +432,16 @@ int main(int argc, char* argv[])
 	argv += optind;
 
 	/* ensure a target directory was supplied */
-	if (!argv[0]) {
-		fprintf(stderr, "ERROR: missing target directory.\n");
-		print_usage(argc+optind, argv-optind, 1);
-		return 2;
+	if (!remove_all) {
+		if (!argv[0]) {
+			fprintf(stderr, "ERROR: missing target directory.\n");
+			print_usage(argc+optind, argv-optind, 1);
+			return 2;
+		}
+		target_directory = argv[0];
+	} else {
+		target_directory = ".";
 	}
-	target_directory = argv[0];
 
 	/* check if target directory exists */
 	if (!file_exists(target_directory)) {

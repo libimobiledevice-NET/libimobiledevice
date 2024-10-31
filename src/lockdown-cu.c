@@ -296,7 +296,7 @@ poly1305_update_with_pad16(poly1305_state *poly1305,
 static void chacha20_poly1305_encrypt_96(unsigned char* key, unsigned char* nonce, unsigned char* ad, size_t ad_len, unsigned char* in, size_t in_len, unsigned char* out, size_t* out_len)
 {
 #if defined(HAVE_OPENSSL)
-#if defined(LIBRESSL_VERSION_NUMBER)
+#if defined(LIBRESSL_VERSION_NUMBER) && (LIBRESSL_VERSION_NUMBER < 0x3050000fL)
 #if (LIBRESSL_VERSION_NUMBER >= 0x2040000fL)
 	const EVP_AEAD *aead = EVP_aead_chacha20_poly1305();
 	EVP_AEAD_CTX ctx;
@@ -380,7 +380,7 @@ static void chacha20_poly1305_encrypt_64(unsigned char* key, unsigned char* nonc
 static void chacha20_poly1305_decrypt_96(unsigned char* key, unsigned char* nonce, unsigned char* ad, size_t ad_len, unsigned char* in, size_t in_len, unsigned char* out, size_t* out_len)
 {
 #if defined(HAVE_OPENSSL)
-#if defined(LIBRESSL_VERSION_NUMBER)
+#if defined(LIBRESSL_VERSION_NUMBER) && (LIBRESSL_VERSION_NUMBER < 0x3050000fL)
 #if (LIBRESSL_VERSION_NUMBER >= 0x2040000fL)
 	const EVP_AEAD *aead = EVP_aead_chacha20_poly1305();
 	EVP_AEAD_CTX ctx;
@@ -492,7 +492,7 @@ static void chacha20_poly1305_decrypt_64(unsigned char* key, unsigned char* nonc
 
 #endif /* HAVE_WIRELESS_PAIRING */
 
-LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl)
+lockdownd_error_t lockdownd_cu_pairing_create(lockdownd_client_t client, lockdownd_cu_pairing_cb_t pairing_callback, void* cb_user_data, plist_t host_info, plist_t acl)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client || !pairing_callback || (host_info && plist_get_node_type(host_info) != PLIST_DICT) || (acl && plist_get_node_type(acl) != PLIST_DICT))
@@ -934,7 +934,7 @@ debug_buffer(data, data_len);
 #endif
 }
 
-LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply)
+lockdownd_error_t lockdownd_cu_send_request_and_get_reply(lockdownd_client_t client, const char* request, plist_t request_payload, plist_t* reply)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client || !request)
@@ -1034,7 +1034,7 @@ LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_send_request_and_get_rep
 	plist_free(dict);
 	dict = NULL;
 
-	plist_from_memory((const char*)decrypted, decrypted_len, &dict);
+	plist_from_memory((const char*)decrypted, decrypted_len, &dict, NULL);
 	if (!dict) {
 		ret = LOCKDOWN_E_PLIST_ERROR;
 		debug_info("Failed to parse PLIST from decrypted payload:");
@@ -1059,7 +1059,7 @@ LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_cu_send_request_and_get_rep
 #endif
 }
 
-LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value)
+lockdownd_error_t lockdownd_get_value_cu(lockdownd_client_t client, const char* domain, const char* key, plist_t* value)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client)
@@ -1099,7 +1099,7 @@ LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_get_value_cu(lockdownd_clie
 #endif
 }
 
-LIBIMOBILEDEVICE_API_MSC lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client)
+lockdownd_error_t lockdownd_pair_cu(lockdownd_client_t client)
 {
 #ifdef HAVE_WIRELESS_PAIRING
 	if (!client)

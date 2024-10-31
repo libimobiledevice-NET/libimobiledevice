@@ -53,6 +53,7 @@
 #include <libimobiledevice/sbservices.h>
 #include <libimobiledevice/diagnostics_relay.h>
 #include <libimobiledevice-glue/utils.h>
+#include <plist/plist.h>
 
 #include <endianness.h>
 
@@ -91,6 +92,7 @@ void usleep(DWORD waitTime) {
 
 static int verbose = 1;
 static int quit_flag = 0;
+static int passcode_requested = 0;
 
 #define PRINT_VERBOSE(min_level, ...) if (verbose >= min_level) { printf(__VA_ARGS__); };
 
@@ -132,6 +134,10 @@ static void notify_cb(const char *notification, void *userdata)
 		quit_flag++;
 	} else if (!strcmp(notification, NP_BACKUP_DOMAIN_CHANGED)) {
 		backup_domain_changed = 1;
+	} else if (!strcmp(notification, "com.apple.LocalAuthentication.ui.presented")) {
+		passcode_requested = 1;
+	} else if (!strcmp(notification, "com.apple.LocalAuthentication.ui.dismissed")) {
+		passcode_requested = 0;
 	} else {
 		PRINT_VERBOSE(1, "Unhandled notification '%s' (TODO: implement)\n", notification);
 	}
@@ -629,7 +635,7 @@ static int mb2_status_check_snapshot_state(const char *path, const char *udid, c
 	plist_t status_plist = NULL;
 	char *file_path = string_build_path(path, udid, "Status.plist", NULL);
 
-	plist_read_from_filename(&status_plist, file_path);
+	plist_read_from_file(file_path, &status_plist, NULL);
 	free(file_path);
 	if (!status_plist) {
 		printf("Could not read Status.plist!\n");
@@ -1578,6 +1584,7 @@ int main(int argc, char *argv[])
 				return 2;
 			}
 			source_udid = strdup(optarg);
+			break;
 		case 'i':
 			interactive_mode = 1;
 			break;
@@ -1802,7 +1809,7 @@ int main(int argc, char *argv[])
 				free(info_path);
 			}
 			plist_t manifest_plist = NULL;
-			plist_read_from_filename(&manifest_plist, manifest_path);
+			plist_read_from_file(manifest_path, &manifest_plist, NULL);
 			if (!manifest_plist) {
 				idevice_free(device);
 				free(info_path);
@@ -1888,11 +1895,13 @@ int main(int argc, char *argv[])
 	if ((ldret == LOCKDOWN_E_SUCCESS) && service && service->port) {
 		np_client_new(device, service, &np);
 		np_set_notify_callback(np, notify_cb, NULL);
-		const char *noties[5] = {
+		const char *noties[7] = {
 			NP_SYNC_CANCEL_REQUEST,
 			NP_SYNC_SUSPEND_REQUEST,
 			NP_SYNC_RESUME_REQUEST,
 			NP_BACKUP_DOMAIN_CHANGED,
+			"com.apple.LocalAuthentication.ui.presented",
+			"com.apple.LocalAuthentication.ui.dismissed",
 			NULL
 		};
 		np_observe_notifications(np, noties);
@@ -1958,7 +1967,7 @@ int main(int argc, char *argv[])
 		/* verify existing Info.plist */
 		if (info_path && (stat(info_path, &st) == 0) && cmd != CMD_CLOUD) {
 			PRINT_VERBOSE(1, "Reading Info.plist from backup.\n");
-			plist_read_from_filename(&info_plist, info_path);
+			plist_read_from_file(info_path, &info_plist, NULL);
 
 			if (!info_plist) {
 				printf("Could not read Info.plist\n");
@@ -2064,7 +2073,7 @@ checkpoint:
 				cmd = CMD_LEAVE;
 			}
 			remove_file(info_path);
-			plist_write_to_filename(info_plist, info_path, PLIST_FORMAT_XML);
+			plist_write_to_file(info_plist, info_path, PLIST_FORMAT_XML, 0);
 			free(info_path);
 
 			plist_free(info_plist);
@@ -2090,6 +2099,16 @@ checkpoint:
 					PRINT_VERBOSE(1, "Full backup mode.\n");
 				}	else {
 					PRINT_VERBOSE(1, "Incremental backup mode.\n");
+				}
+				if (device_version >= DEVICE_VERSION(16,1,0)) {
+					/* let's wait 2 second to see if the device passcode is requested */
+					int retries = 20;
+					while (retries-- > 0 && !passcode_requested) {
+						usleep(100000);
+					}
+					if (passcode_requested) {
+						printf("*** Waiting for passcode to be entered on the device ***\n");
+					}
 				}
 			} else {
 				if (err == MOBILEBACKUP2_E_BAD_VERSION) {
