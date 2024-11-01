@@ -35,14 +35,35 @@
 #include <getopt.h>
 #include <signal.h>
 #include <ctype.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <dirent.h>
 #include <time.h>
 
 #ifdef WIN32
 #include <windows.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
 #include <conio.h>
+#else
+#include <winsock2.h>
+int gettimeofday(struct timeval* tv, void* tz) {
+
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft);
+
+	ULARGE_INTEGER uli;
+	uli.LowPart = ft.dwLowDateTime;
+	uli.HighPart = ft.dwHighDateTime;
+
+	const long long epoch = 11644473600LL; // Difference between Windows epoch and Unix epoch
+	tv->tv_sec = (long)(uli.QuadPart / 10000000ULL - epoch);
+	tv->tv_usec = (long)((uli.QuadPart % 10000000ULL) / 10);
+
+	return 0;
+}
+#endif
 #define sleep(x) Sleep(x*1000)
 #define S_IFMT          0170000         /* [XSI] type of file mask */
 #define S_IFIFO         0010000         /* [XSI] named pipe (fifo) */
